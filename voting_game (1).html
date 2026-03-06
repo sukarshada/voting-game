@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جلسة التصويت التفاعلية - شدا عابد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        :root {
+            --primary: #FF6B9D;
+            --secondary: #4ECDC4;
+            --warm: #FFD93D;
+            --calm: #6C5CE7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .therapist-name {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* SETUP */
+        .setup-screen {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .setup-screen h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .student-card {
+            padding: 15px;
+            background: #f5f5f5;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .student-card:hover {
+            border-color: var(--primary);
+        }
+
+        .student-card.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .start-btn {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+        }
+
+        /* VOTING SCREEN */
+        .voting-screen {
+            display: none;
+        }
+
+        .category-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .category-btn {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .category-btn.active {
+            background: var(--warm);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .question-number {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .students-list {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .students-list h3 {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .voting-students {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 12px;
+        }
+
+        .student-vote-btn {
+            padding: 12px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .student-vote-btn:hover {
+            border-color: var(--primary);
+            background: rgba(255, 107, 157, 0.1);
+        }
+
+        .student-vote-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .student-vote-btn.voted {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .voting-options {
+            display: none;
+        }
+
+        .voting-options.show {
+            display: block;
+            background: rgba(108, 92, 231, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .voting-options h4 {
+            font-size: 13px;
+            color: #6C5CE7;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .options.three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .option-btn {
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .results-section {
+            background: rgba(255, 215, 61, 0.15);
+            border-right: 4px solid var(--warm);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .results-title {
+            font-weight: 700;
+            color: #F39C12;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .results-grid.three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .result-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #ddd;
+        }
+
+        .result-label {
+            font-weight: 600;
+            font-size: 12px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .result-info {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .discussion-prompt {
+            background: rgba(108, 92, 231, 0.15);
+            border-right: 4px solid var(--calm);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .discussion-prompt-title {
+            font-weight: 700;
+            color: #6C5CE7;
+            margin-bottom: 8px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #333;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🎯 جلسة التصويت التفاعلية</h1>
+        <div class="therapist-name">✏️ شدا عابد - علاج وظيفي</div>
+    </div>
+
+    <!-- SETUP -->
+    <div id="setupScreen" class="setup-screen">
+        <h2>من معنا اليوم؟ اختر الطُّلاب الحاضرين 👋</h2>
+        <div class="students-grid" id="studentsGrid"></div>
+        <button class="start-btn" id="startBtn" disabled>ابدأ الجلسة 🎮</button>
+    </div>
+
+    <!-- VOTING -->
+    <div id="votingScreen" class="voting-screen">
+        <div class="category-nav">
+            <button class="category-btn active" onclick="showCategory(0)">❓ هل تُفضِّل</button>
+            <button class="category-btn" onclick="showCategory(1)">😊 كيف تشعر</button>
+            <button class="category-btn" onclick="showCategory(2)">💭 ما أفضل حل</button>
+            <button class="category-btn" onclick="showCategory(3)">🎭 هذا أم ذاك</button>
+        </div>
+
+        <div id="content"></div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="prevQuestion()">← السابق</button>
+            <button class="btn btn-primary" onclick="nextQuestion()">التالي →</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const studentNames = ['لارا', 'عبير', 'نسيبة', 'الين', 'محمد', 'نيكولاس', 'ابراهيم', 'وليد', 'سفيان'];
+
+const questions = {
+    0: {
+        title: 'هل تُفضِّل',
+        questions: [
+            { text: 'هل تُفضِّل: تلعب ألعاب فيديو... أم تقرأ قصصاً؟', options: ['ألعاب الفيديو', 'القصص'] },
+            { text: 'هل تُفضِّل: تقضي الوقت مع أصدقائك... أم مع عائلتك؟', options: ['الأصدقاء', 'العائلة'] },
+            { text: 'هل تُفضِّل: تأكل شوكولاتة... أم تأكل بيتزا؟', options: ['الشوكولاتة', 'البيتزا'] },
+            { text: 'هل تُفضِّل: تنام طويلاً... أم تستيقِظ مبكِّراً للعب؟', options: ['النوم الطويل', 'الاستيقاظ المبكّر'] },
+            { text: 'هل تُفضِّل: تركض وتلعب... أم تجلس وتستريح؟', options: ['الركض واللعب', 'الجلوس والراحة'] },
+            { text: 'هل تُفضِّل: يوماً حاراً جداً... أم يوماً بارداً جداً؟', options: ['اليوم الحار', 'اليوم البارد'] },
+            { text: 'هل تُفضِّل: عطلة مدرسية... أم الذهاب إلى المدرسة؟', options: ['العطلة', 'الذهاب للمدرسة'] },
+            { text: 'هل تُفضِّل: ترسم وتلوّن... أم تكتب قصة؟', options: ['الرسم والتلوين', 'الكتابة'] },
+            { text: 'هل تُفضِّل: تستمع إلى موسيقى... أم تشاهد أفلام كرتون؟', options: ['الموسيقى', 'أفلام الكرتون'] },
+            { text: 'هل تُفضِّل: تساعد والديك في البيت... أم تلعب مع إخوتك؟', options: ['مساعدة الوالدين', 'اللعب مع الإخوة'] }
+        ]
+    },
+
+    1: {
+        title: 'كيف تشعر',
+        questions: [
+            { text: 'عندما تسمع صوتاً مفاجئاً بلا تحذير... جسدك يشعر بـ؟', options: ['قفزة وخوف في القلب', 'انزعاج بسيط', 'لا شيء خاص'] },
+            { text: 'عندما يختفي شيء مهم في حياتك فجأة... كيف تشعر؟', options: ['حزن عميق جداً', 'حزن طبيعي', 'يمكنني التعايش معه'] },
+            { text: 'عندما ترى شخصاً قريباً منك يشعر بالخوف أو الحزن... كيف تشعر؟', options: ['قلق شديد عليه', 'حزن معه', 'أريد مساعدته'] },
+            { text: 'عندما تبقى في مكان واحد لأيام طويلة... جسدك يشعر بـ؟', options: ['ضيق وحبس', 'ملل وضجر', 'أتعوّد على الأمر'] },
+            { text: 'عندما تسمع كلاماً قلِقاً من الكبار حولك... هل هذا يؤثّر عليك؟', options: ['القلق ينتقل إليّ', 'أشعر بعدم الأمان', 'أحاول البقاء هادئاً'] },
+            { text: 'عندما يحدث شيء جميل بدون توقّع... كيف تشعر؟', options: ['فرح حقيقي يملأني', 'فخور وممتن', 'سعادة تغمرني'] },
+            { text: 'عندما تتذكّر لحظات جميلة من قبل... المشاعر تكون؟', options: ['حزن لأنها ذهبت', 'حنين وسعادة معاً', 'اشتياق عميق'] },
+            { text: 'عندما لا تعرف ما سيحدث في الأيام القادمة... كيف تشعر؟', options: ['قلق وخوف مستمر', 'عدم استقرار', 'أحاول عدم التفكير فيه'] },
+            { text: 'عندما يحتاج شخص قريب منك للمساعدة فعلاً... تشعر أنك؟', options: ['قوي وقادر', 'مسؤول لكن متردّد', 'أريد أن أكون هناك له'] },
+            { text: 'عندما تنظر للمستقبل والأيام القادمة... داخلك يقول؟', options: ['أمل وحلم كبير', 'عدم يقين لكن قوة', 'حذر واستعداد للتغيير'] }
+        ]
+    },
+    2: {
+        title: 'ما أفضل حل',
+        questions: [
+            { text: 'عندما يشعر شخص قريب بالخوف... ما أفضل ما تفعله؟', options: ['أكون معه وأحتضنه', 'ألعب معه لأنساه الخوف', 'أستدعي الكبار'] },
+            { text: 'عندما تشعر أنت بحزن عميق... ما أفضل ما تفعله؟', options: ['أتحدّث مع والديّ بصراحة', 'أهرب إلى لعبة أحبّها', 'أبكي وحدي'] },
+            { text: 'عندما لا تفهم شيئاً مهماً في الدراسة... ما أفضل ما تفعله؟', options: ['أطلب من معلّمي شرحاً', 'أطلب من صديق', 'أترك الموضوع'] },
+            { text: 'عندما تتشاجر مع صديقك... ما أفضل ما تفعله؟', options: ['أعتذر وأتحدّث معه بهدوء', 'أتركه لبعض الوقت', 'أخبر المعلم'] },
+            { text: 'عندما تشعر بالملل الشديد في البيت... ما أفضل ما تفعله؟', options: ['أرسم أو أكتب أو أقرأ', 'أطلب من والديّ فكرة', 'أنام'] },
+            { text: 'عندما تخطئ في شيء مهم... ما أفضل ما تفعله؟', options: ['أصححه وأخبر الكبار', 'أخفيه وأتمنّى عدم اكتشافه', 'أعتذر بصدق'] },
+            { text: 'عندما ترى أخاً صغيراً يبكي من الخوف... ما أفضل ما تفعله؟', options: ['أسأله عن سبب خوفه', 'أفعل شيئاً يجعله يضحك', 'أترك الوالدين يتعاملان'] },
+            { text: 'عندما تشعر بعدم الأمان... ما أفضل ما تفعله؟', options: ['أبقى قريباً من عائلتي', 'أتحدّث عن مشاعري', 'أملأ وقتي بأنشطة'] },
+            { text: 'عندما يأخذ أحد شيئاً منك بدون إذن... ما أفضل ما تفعله؟', options: ['أطلبه برفق وبهدوء', 'أصرخ وأغضب', 'آخذه بالقوة'] },
+            { text: 'عندما تشعر بوحدة وحزن قد لا تستطيع شرحه... ما أفضل ما تفعله؟', options: ['أبقى قريباً من الناس', 'أجد شخصاً أثق به', 'أكتب أو أرسم مشاعري'] }
+        ]
+    },
+    3: {
+        title: 'هذا أم ذاك',
+        questions: [
+            { text: 'كرة القدم أم الرسم؟', options: ['كرة القدم', 'الرسم'] },
+            { text: 'اللون الأزرق أم اللون الأحمر؟', options: ['الأزرق', 'الأحمر'] },
+            { text: 'حيوانك الأليف أم كتابك المفضل؟', options: ['الحيوان الأليف', 'الكتاب'] },
+            { text: 'الاستيقاظ مبكِّراً أم النوم طويلاً؟', options: ['الاستيقاظ المبكّر', 'النوم الطويل'] },
+            { text: 'اللعب الهادئ أم اللعب المشوّق؟', options: ['اللعب الهادئ', 'اللعب المشوّق'] },
+            { text: 'الطعام المالح أم الطعام الحلو؟', options: ['المالح', 'الحلو'] },
+            { text: 'المدرسة أم الإجازة؟', options: ['المدرسة', 'الإجازة'] },
+            { text: 'مشاهدة الأفلام أم قراءة الكتب؟', options: ['الأفلام', 'الكتب'] },
+            { text: 'اللعب بالخارج أم البقاء في البيت؟', options: ['اللعب بالخارج', 'البقاء في البيت'] },
+            { text: 'الأصدقاء أم العائلة؟', options: ['الأصدقاء', 'العائلة'] }
+        ]
+    }
+};
+
+let selectedStudents = [];
+let currentCategory = 0;
+let currentQuestion = 0;
+let studentVotes = {};
+let currentVotingStudent = null;
+
+function initSetup() {
+    const grid = document.getElementById('studentsGrid');
+    studentNames.forEach((name, idx) => {
+        const card = document.createElement('div');
+        card.className = 'student-card';
+        card.textContent = name;
+        card.onclick = () => toggleStudent(idx, card);
+        grid.appendChild(card);
+    });
+}
+
+function toggleStudent(idx, card) {
+    const name = studentNames[idx];
+    if (selectedStudents.includes(name)) {
+        selectedStudents = selectedStudents.filter(p => p !== name);
+        card.classList.remove('selected');
+    } else {
+        selectedStudents.push(name);
+        card.classList.add('selected');
+    }
+    document.getElementById('startBtn').disabled = selectedStudents.length === 0;
+}
+
+function startGame() {
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('votingScreen').style.display = 'block';
+    initVotes();
+    renderQuestion();
+}
+
+function initVotes() {
+    studentVotes = {};
+    questions[currentCategory].questions.forEach((q, qi) => {
+        studentVotes[`${currentCategory}-${qi}`] = {};
+        selectedStudents.forEach(student => {
+            studentVotes[`${currentCategory}-${qi}`][student] = null;
+        });
+    });
+}
+
+function showCategory(cat) {
+    currentCategory = cat;
+    currentQuestion = 0;
+    initVotes();
+    currentVotingStudent = null;
+    
+    document.querySelectorAll('.category-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === cat);
+    });
+    
+    renderQuestion();
+}
+
+function recordVote(optionIndex) {
+    if (!currentVotingStudent) return;
+    
+    studentVotes[`${currentCategory}-${currentQuestion}`][currentVotingStudent] = optionIndex;
+    currentVotingStudent = null;
+    renderQuestion();
+}
+
+function renderQuestion() {
+    const q = questions[currentCategory].questions[currentQuestion];
+    const voteKey = `${currentCategory}-${currentQuestion}`;
+    const votes = studentVotes[voteKey];
+    
+    const voteCounts = {};
+    const studentsByVote = {};
+    q.options.forEach((_, i) => {
+        voteCounts[i] = 0;
+        studentsByVote[i] = [];
+    });
+    
+    Object.entries(votes).forEach(([student, optionIdx]) => {
+        if (optionIdx !== null) {
+            voteCounts[optionIdx]++;
+            studentsByVote[optionIdx].push(student);
+        }
+    });
+    
+    const totalVotes = Object.values(voteCounts).reduce((a, b) => a + b, 0);
+    
+    let html = `
+        <div class="question-card">
+            <div class="question-number">السؤال ${currentQuestion + 1} من 10</div>
+            <div class="question-text">${q.text}</div>
+            
+            <div class="students-list">
+                <h3>من يُصوِّت؟ اختر الطّالب</h3>
+                <div class="voting-students">
+    `;
+    
+    selectedStudents.forEach(student => {
+        const voted = votes[student] !== null;
+        const isActive = currentVotingStudent === student;
+        html += `
+            <button class="student-vote-btn ${isActive ? 'active' : ''} ${voted ? 'voted' : ''}"
+                    onclick="selectStudent('${student}')">
+                ${student}
+                ${voted ? ' ✅' : ''}
+            </button>
+        `;
+    });
+    
+    html += `</div></div>`;
+    
+    // Show voting options if student is selected
+    if (currentVotingStudent) {
+        html += `
+            <div class="voting-options show">
+                <h4>👋 ${currentVotingStudent} - اختر إجابتك:</h4>
+                <div class="options ${q.options.length === 3 ? 'three-col' : ''}">
+        `;
+        
+        q.options.forEach((opt, i) => {
+            html += `
+                <button class="option-btn" onclick="recordVote(${i})">
+                    ${opt}
+                </button>
+            `;
+        });
+        
+        html += `</div></div>`;
+    }
+    
+    // Results
+    html += `
+            <div class="results-section">
+                <div class="results-title">📊 النتائج:</div>
+                <div class="results-grid ${q.options.length === 3 ? 'three-col' : ''}">
+    `;
+    
+    q.options.forEach((opt, i) => {
+        const pct = totalVotes > 0 ? Math.round(voteCounts[i] / totalVotes * 100) : 0;
+        const voters = studentsByVote[i].join(', ') || '-';
+        html += `
+            <div class="result-item">
+                <div class="result-label">${opt}</div>
+                <div class="result-info">${voteCounts[i]} أصوات (${pct}%)</div>
+                <div class="result-info"><strong>من صوّت:</strong> ${voters}</div>
+            </div>
+        `;
+    });
+    
+    html += `</div></div>
+            
+            <div class="discussion-prompt">
+                <div class="discussion-prompt-title">💬 الآن: حان وقت النقاش!</div>
+                <div>لماذا اخترتم هكذا؟ ماذا تشعرون؟ تحدّثوا معنا! 🗣️</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('content').innerHTML = html;
+}
+
+function selectStudent(name) {
+    currentVotingStudent = currentVotingStudent === name ? null : name;
+    renderQuestion();
+}
+
+function nextQuestion() {
+    if (currentQuestion < questions[currentCategory].questions.length - 1) {
+        currentQuestion++;
+        currentVotingStudent = null;
+        renderQuestion();
+    } else {
+        alert('انتهيت من كل الأسئلة بهالقسم! 🎉');
+    }
+}
+
+function prevQuestion() {
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        currentVotingStudent = null;
+        renderQuestion();
+    }
+}
+
+initSetup();
+document.getElementById('startBtn').onclick = startGame;
+</script>
+
+</body>
+</html>
